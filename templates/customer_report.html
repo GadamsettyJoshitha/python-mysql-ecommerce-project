@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Order Report</title>
+    <style>
+        :root {
+            --ink: #202033;
+            --muted: #667085;
+            --line: #e2d8ee;
+            --panel: #ffffff;
+            --page: #fff8f3;
+            --brand: #6d28d9;
+            --brand-dark: #312e81;
+            --accent: #f43f5e;
+            --gold: #f59e0b;
+            --mint: #14b8a6;
+            --sky: #0284c7;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            color: var(--ink);
+            background:
+                linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(20, 184, 166, 0.12)),
+                var(--page);
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--brand-dark), var(--brand), var(--accent));
+            color: white;
+            padding: 28px 36px;
+            border-bottom: 5px solid var(--gold);
+        }
+
+        header h1 {
+            margin: 0 0 6px;
+            font-size: 28px;
+        }
+
+        header p {
+            margin: 0;
+            color: #fff1f2;
+        }
+
+        main {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 26px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .metric, section {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            box-shadow: 0 10px 28px rgba(49, 46, 129, 0.10);
+        }
+
+        .metric {
+            padding: 18px;
+            border-top: 5px solid var(--accent);
+        }
+
+        .metric:nth-child(2) {
+            border-top-color: var(--mint);
+        }
+
+        .metric:nth-child(3) {
+            border-top-color: var(--gold);
+        }
+
+        .metric:nth-child(4) {
+            border-top-color: var(--sky);
+        }
+
+        .metric span {
+            display: block;
+            color: var(--muted);
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .metric strong {
+            font-size: 24px;
+            color: var(--brand);
+        }
+
+        section {
+            overflow: hidden;
+        }
+
+        section h2 {
+            margin: 0;
+            padding: 16px 18px;
+            font-size: 18px;
+            border-bottom: 1px solid var(--line);
+            background: linear-gradient(90deg, #fff1f2, #f5f3ff);
+            color: var(--brand-dark);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td {
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--line);
+            text-align: left;
+            font-size: 14px;
+        }
+
+        th {
+            color: #312e81;
+            background: #ede9fe;
+            font-weight: 700;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #fffbf7;
+        }
+
+        tbody tr:hover {
+            background: #fff1f2;
+        }
+
+        .amount {
+            text-align: right;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 999px;
+            background: #ccfbf1;
+            color: #0f766e;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        @media (max-width: 820px) {
+            main {
+                padding: 16px;
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Your Order Report</h1>
+        <p>{{ customer.customer_name }} | {{ customer.customer_email }} | Generated at {{ generated_at }}</p>
+    </header>
+
+    <main>
+        <div class="summary-grid">
+            <div class="metric">
+                <span>Customer ID</span>
+                <strong>{{ customer.customer_id }}</strong>
+            </div>
+            <div class="metric">
+                <span>Total Orders</span>
+                <strong>{{ customer.total_orders }}</strong>
+            </div>
+            <div class="metric">
+                <span>Total Spent</span>
+                <strong>{{ "%.2f"|format(customer.total_spent) }}</strong>
+            </div>
+            <div class="metric">
+                <span>Average Order Value</span>
+                <strong>{{ "%.2f"|format(customer.average_order_value) }}</strong>
+            </div>
+        </div>
+
+        <section>
+            <h2>Your Orders</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Date</th>
+                        <th>Product</th>
+                        <th>Category</th>
+                        <th class="amount">Qty</th>
+                        <th class="amount">Price</th>
+                        <th class="amount">Total</th>
+                        <th>Payment</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in orders %}
+                    <tr>
+                        <td>{{ row.order_id }}</td>
+                        <td>{{ row.order_date }}</td>
+                        <td>{{ row.product }}</td>
+                        <td>{{ row.category }}</td>
+                        <td class="amount">{{ row.quantity }}</td>
+                        <td class="amount">{{ "%.2f"|format(row.price) }}</td>
+                        <td class="amount">{{ "%.2f"|format(row.total_amount) }}</td>
+                        <td>{{ row.payment_method }}</td>
+                        <td><span class="status">{{ row.order_status }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+    </main>
+</body>
+</html>
